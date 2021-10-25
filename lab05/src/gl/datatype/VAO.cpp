@@ -13,8 +13,13 @@ VAO::VAO(const VBO &vbo, int numberOfVerticesToRender) :
     m_triangleLayout(vbo.triangleLayout())
 {
     // TODO [Task 3]
+    glGenVertexArrays(1, &(m_handle));
 
     // TODO [Task 4]
+    bind();
+    vbo.bindAndEnable();
+    vbo.unbind();
+    unbind();
 
 }
 
@@ -67,6 +72,7 @@ VAO& VAO::operator=(VAO &&that) {
 
 VAO::~VAO()
 {
+    glDeleteVertexArrays(1, &(m_handle));
     // TODO [Task 6]
 
 }
@@ -79,7 +85,7 @@ void VAO::draw(int count) {
     switch(m_drawMethod) {
         case VAO::DRAW_ARRAYS:
             // TODO [Task 5]
-
+            glDrawArrays(m_triangleLayout, 0, count);
             break;
         case VAO::DRAW_INDEXED:
             // TODO [OPTIONAL]
@@ -93,12 +99,13 @@ void VAO::draw(int count) {
 
 void VAO::bind() {
     // TODO [Task 4]
+    glBindVertexArray(m_handle);
 
 }
 
 void VAO::unbind() {
     // TODO [Task 4]
-
+    glBindVertexArray(0);
 }
 
 }}
