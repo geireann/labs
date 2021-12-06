@@ -64,11 +64,22 @@ void GLWidget::initializeGL() {
     // We've already set the vertex attributes for you, so be sure to follow those specifications
     // (triangle strip, 4 vertices, position followed by UVs)
     std::vector<GLfloat> quadData;
+    quadData = {-1, 1,0,
+                  0, 1,
+                  -1, -1,0,
+                  0, 0,
+                  1, 1,0,
+                  1, 1,
+                  1, -1,0,
+                  1, 0
+                  };
     m_quad = std::make_unique<OpenGLShape>();
     m_quad->setVertexData(&quadData[0], quadData.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, 4);
     m_quad->setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
     m_quad->setAttribute(ShaderAttrib::TEXCOORD0, 2, 3*sizeof(GLfloat), VBOAttribMarker::DATA_TYPE::FLOAT, false);
     m_quad->buildVAO();
+
+
 
     // We will use this VAO to draw our particles' triangles.
     // It doesn't need any data associated with it, so we don't have to make a full VAO instance
@@ -96,10 +107,49 @@ void GLWidget::paintGL() {
 
 void GLWidget::drawBlur() {
     // TODO: [Task 1] Do drawing here!
+    m_blurFBO1->bind();
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glUseProgram(m_phongProgram);
+
+//    m_view = glm::mat4(1.0f);
+//    m_projection = glm::mat4(1.0f);
+    glm::mat4 model =glm::translate(glm::vec3(0.0f, 1.2f, 0.0f));
+
+    glUniformMatrix4fv(glGetUniformLocation(m_phongProgram,"model"),1,GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(m_phongProgram,"view"),1,GL_FALSE, glm::value_ptr(m_view));
+    glUniformMatrix4fv(glGetUniformLocation(m_phongProgram,"projection"),1,GL_FALSE, glm::value_ptr(m_projection));
+
     //       [Task 1.5] Call glViewport so that the viewport is the right size
+    glViewport(0, 0, m_width, m_height);
+    m_sphere->draw();
+
+
+    // glViewport(0, 0, m_width, m_height);
+    m_blurFBO2->bind();
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     //       [Task 5b] Bind m_blurFBO1
     //       [Task 8] Bind m_blurFBO1's color texture
+    m_blurFBO1->getColorAttachment(0).bind();
+
     //       [Task 7] Unbind m_blurFBO1 and render a full screen quad
+    //m_blurFBO1->unbind();
+
+
+
+    glUseProgram(m_horizontalBlurProgram);
+    m_quad->draw();
+
+    m_blurFBO2->unbind();
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, m_width, m_height);
+    m_blurFBO2->getColorAttachment(0).bind();
+    glUseProgram(m_verticalBlurProgram);
+     m_quad->draw();
+
     //       [Task 11] Bind m_blurFBO2
 
 }
@@ -123,6 +173,8 @@ void GLWidget::resizeGL(int w, int h) {
     m_width = w;
     m_height = h;
 
+    m_blurFBO1= std::make_unique<FBO>(1,FBO::DEPTH_STENCIL_ATTACHMENT::DEPTH_ONLY ,w,h,TextureParameters::WRAP_METHOD::CLAMP_TO_EDGE);
+    m_blurFBO2= std::make_unique<FBO>(1,FBO::DEPTH_STENCIL_ATTACHMENT::NONE ,w,h,TextureParameters::WRAP_METHOD::CLAMP_TO_EDGE);
     // TODO: [Task 5] Initialize FBOs here, with dimensions m_width and m_height.
     //       [Task 12] Pass in TextureParameters::WRAP_METHOD::CLAMP_TO_EDGE as the last parameter
 

@@ -18,6 +18,10 @@
 
 #include <QPainter>
 
+// For commenting
+#include <iostream>
+using namespace std;
+
 Canvas2D::Canvas2D() {
     notifySizeChanged(width(), height());
 }
@@ -28,11 +32,39 @@ Canvas2D::~Canvas2D()
 
 void Canvas2D::filterImage() {
     // TODO: Task 1
+    std::unique_ptr<Filter> filter;
 
+    int filterType = settings.filterType;
     // TODO: Task 2
+    switch(filterType){
+        case 0:
+            filter = std::make_unique<FilterInvert>();
+            cout << filterType << ":" << "invert" << endl;
+            break;
+        case 1:
+            filter = std::make_unique<FilterGray>();
+            cout << filterType << ":" << "grayscale" << endl;
+            break;
+        case 2:
+            filter = std::make_unique<FilterIdentity>();
+            cout << filterType << ":" << "identity" << endl;
+            break;
+        case 3:
+            filter = std::make_unique<FilterShift>(SHIFT_LEFT);
+            cout << filterType << ":" << "shift left" << endl;
+            break;
+        case 4:
+            filter = std::make_unique<FilterShift>(SHIFT_RIGHT);
+            cout << filterType << ":" << "shift right" << endl;
+            break;
+        default:
+            cout << filterType << endl;
+            break;
+    }
+
 
     // TODO: Task 3
-
+    filter->apply(this);
     this->update();
 }
 

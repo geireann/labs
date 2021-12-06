@@ -2,7 +2,8 @@
 
 unsigned char RGBAToGray(const RGBA &pixel) {
     // TODO: Task 5
-
+    int y = 0.299*pixel.r + 0.587*pixel.g + 0.114*pixel.b;
+    return y;
 }
 
 FilterGray::~FilterGray()
@@ -26,10 +27,12 @@ void FilterGray::apply(Canvas2D *canvas) {
 
         for (int c = 0; c < canvas->width(); c++) {
             // TODO: Task 4
-
+            unsigned char intensity = RGBAToGray(*current_pixel);
 
             // TODO: Task 6
-
+            current_pixel->r = intensity;
+            current_pixel->g = intensity;
+            current_pixel->b = intensity;
 
             /* Advance to the next pixel */
             current_pixel++;
